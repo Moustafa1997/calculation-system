@@ -1,0 +1,81 @@
+/*
+  # Fix database schema
+  
+  1. Drop existing tables and recreate with correct structure
+  2. Enable RLS and create policies
+*/
+
+-- Drop existing tables if they exist
+DROP TABLE IF EXISTS public.invoice_cards;
+DROP TABLE IF EXISTS public.invoices;
+DROP TABLE IF EXISTS public.cards;
+
+-- Create cards table
+CREATE TABLE public.cards (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  date text NOT NULL,
+  farmer_name text NOT NULL,
+  gross_weight numeric NOT NULL,
+  discount_percentage numeric NOT NULL,
+  discount_amount numeric NOT NULL,
+  net_weight numeric NOT NULL,
+  vehicle_number text NOT NULL,
+  supplier_name text,
+  created_at timestamptz DEFAULT now()
+);
+
+-- Create invoices table with embedded cards
+CREATE TABLE public.invoices (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  date text NOT NULL,
+  farmer_name text NOT NULL,
+  cards jsonb NOT NULL,
+  contract_price numeric NOT NULL,
+  free_price numeric,
+  contract_quantity_per_bag numeric NOT NULL,
+  seed_bags numeric NOT NULL,
+  seed_bag_price numeric NOT NULL,
+  additional_seed_kilos numeric DEFAULT 0,
+  total_contract_quantity numeric NOT NULL,
+  free_quantity numeric,
+  contract_amount numeric NOT NULL,
+  free_amount numeric DEFAULT 0,
+  seed_rights numeric NOT NULL,
+  total_amount numeric NOT NULL,
+  net_amount numeric NOT NULL,
+  additional_deductions numeric DEFAULT 0,
+  final_amount numeric NOT NULL,
+  is_paid boolean DEFAULT false,
+  remaining_amount numeric,
+  created_at timestamptz DEFAULT now()
+);
+
+-- Enable RLS
+ALTER TABLE public.cards ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
+
+-- Policies for cards
+CREATE POLICY "Enable read access for all users" ON public.cards
+  FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert access for all users" ON public.cards
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Enable update access for all users" ON public.cards
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Enable delete access for all users" ON public.cards
+  FOR DELETE USING (true);
+
+-- Policies for invoices
+CREATE POLICY "Enable read access for all users" ON public.invoices
+  FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert access for all users" ON public.invoices
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Enable update access for all users" ON public.invoices
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Enable delete access for all users" ON public.invoices
+  FOR DELETE USING (true);
