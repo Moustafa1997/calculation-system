@@ -86,7 +86,8 @@ export const getCards = async (): Promise<Card[]> => {
       netWeight: Number(record.net_weight),
       vehicleNumber: record.vehicle_number,
       supplierName: record.supplier_name,
-      supplierCardNumber: record.supplier_card_number
+      supplierCardNumber: record.supplier_card_number,
+      is_done: Boolean(record.is_done)
     })) || [];
   } catch (error) {
     console.error('Error fetching cards:', error);
@@ -145,7 +146,8 @@ export const saveCard = async (card: Omit<Card, 'id' | 'supplierCardNumber'>): P
         net_weight: card.netWeight,
         vehicle_number: card.vehicleNumber,
         supplier_name: card.supplierName,
-        supplier_card_number: supplierCardNumber
+        supplier_card_number: supplierCardNumber,
+        is_done: card.is_done || false
       }])
       .select()
       .single();
@@ -163,7 +165,8 @@ export const saveCard = async (card: Omit<Card, 'id' | 'supplierCardNumber'>): P
       netWeight: Number(data.net_weight),
       vehicleNumber: data.vehicle_number,
       supplierName: data.supplier_name,
-      supplierCardNumber: data.supplier_card_number
+      supplierCardNumber: data.supplier_card_number,
+      is_done: Boolean(data.is_done)
     };
   } catch (error) {
     console.error('Error saving card:', error);
@@ -185,7 +188,8 @@ export const updateCard = async (card: Card): Promise<Card> => {
         net_weight: card.netWeight,
         vehicle_number: card.vehicleNumber,
         supplier_name: card.supplierName,
-        supplier_card_number: card.supplierCardNumber
+        supplier_card_number: card.supplierCardNumber,
+        is_done: card.is_done || false
       })
       .eq('id', card.id)
       .select()
@@ -204,10 +208,43 @@ export const updateCard = async (card: Card): Promise<Card> => {
       netWeight: Number(data.net_weight),
       vehicleNumber: data.vehicle_number,
       supplierName: data.supplier_name,
-      supplierCardNumber: data.supplier_card_number
+      supplierCardNumber: data.supplier_card_number,
+      is_done: Boolean(data.is_done)
     };
   } catch (error) {
     console.error('Error updating card:', error);
+    throw error;
+  }
+};
+
+// Toggle card done status
+export const toggleCardDoneStatus = async (id: number, is_done: boolean): Promise<Card> => {
+  try {
+    const { data, error } = await supabase
+      .from('cards')
+      .update({ is_done })
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error) throw error;
+    if (!data) throw new Error('No data returned after updating card status');
+    
+    return {
+      id: data.id,
+      date: data.date,
+      farmerName: data.farmer_name,
+      grossWeight: Number(data.gross_weight),
+      discountPercentage: Number(data.discount_percentage),
+      discountAmount: Number(data.discount_amount),
+      netWeight: Number(data.net_weight),
+      vehicleNumber: data.vehicle_number,
+      supplierName: data.supplier_name,
+      supplierCardNumber: data.supplier_card_number,
+      is_done: Boolean(data.is_done)
+    };
+  } catch (error) {
+    console.error('Error toggling card status:', error);
     throw error;
   }
 };
@@ -280,7 +317,8 @@ export const searchCards = async (query: string): Promise<Card[]> => {
       netWeight: Number(record.net_weight),
       vehicleNumber: record.vehicle_number,
       supplierName: record.supplier_name,
-      supplierCardNumber: record.supplier_card_number
+      supplierCardNumber: record.supplier_card_number,
+      is_done: Boolean(record.is_done)
     })) : [];
     
     // Apply Arabic text normalization filtering if searching by name
