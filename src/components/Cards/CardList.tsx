@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../../types';
 import { formatCurrency } from '../../utils/formatting';
-import { deleteCard, deleteAllCards } from '../../utils/storage';
+import { deleteCard, deleteAllCards, toggleCardDoneStatus } from '../../utils/storage';
 import { exportCardToPDF } from '../../utils/export';
 import { useAppContext } from '../../contexts/AppContext';
 import { useAlert } from '../../contexts/AlertContext';
 import Pagination from '../UI/Pagination';
 import CardEditModal from './CardEditModal';
-import { Edit, Trash2, AlertTriangle, FileDown, Eye, Filter } from 'lucide-react';
+import { Edit, Trash2, AlertTriangle, FileDown, Eye, Filter, Check } from 'lucide-react';
 
 interface CardListProps {
   cards: Card[];
@@ -86,6 +86,19 @@ const CardList: React.FC<CardListProps> = ({
   // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  // Handle toggle card done status
+  const handleToggleDone = async (card: Card) => {
+    try {
+      const newStatus = !card.is_done;
+      const updatedCard = await toggleCardDoneStatus(card.id, newStatus);
+      dispatch({ type: 'UPDATE_CARD', payload: updatedCard });
+      showAlert('success', newStatus ? 'تم تمييز الكارتة كمكتملة ✅' : 'تم إلغاء تمييز الكارتة كمكتملة');
+    } catch (error) {
+      console.error('Error toggling card status:', error);
+      showAlert('error', 'حدث خطأ أثناء تحديث حالة الكارتة');
+    }
   };
 
   const handleDownloadPDF = (card: Card) => {
@@ -204,6 +217,7 @@ const CardList: React.FC<CardListProps> = ({
           <thead className="table-header">
             <tr>
               {selectable && <th className="w-10"></th>}
+              <th className="w-16">مكتمل</th>
               <th className="w-14">المسلسل</th>
               <th className="w-14">رقم الكارتة</th>
               <th className="w-24">التاريخ</th>
@@ -221,7 +235,9 @@ const CardList: React.FC<CardListProps> = ({
             {currentCards.map((card) => (
               <tr 
                 key={card.id}
-                className={selectable && isCardSelected(card.id) ? 'bg-green-50' : ''}
+                className={`${selectable && isCardSelected(card.id) ? 'bg-green-50' : ''} ${
+                  card.is_done ? 'bg-gray-100 opacity-75' : ''
+                }`}
               >
                 {selectable && (
                   <td className="px-6 py-4">
@@ -233,6 +249,19 @@ const CardList: React.FC<CardListProps> = ({
                     />
                   </td>
                 )}
+                <td className="px-6 py-4 text-center">
+                  <button
+                    onClick={() => handleToggleDone(card)}
+                    className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
+                      card.is_done 
+                        ? 'bg-green-500 border-green-500 text-white hover:bg-green-600' 
+                        : 'border-gray-300 hover:border-green-400 hover:bg-green-50'
+                    }`}
+                    title={card.is_done ? 'إلغاء تمييز الكارتة كمكتملة' : 'تمييز الكارتة كمكتملة'}
+                  >
+                    {card.is_done && <Check className="h-4 w-4" />}
+                  </button>
+                </td>
                 <td className="arabic-number">{card.id}</td>
                 <td className="arabic-number">{card.supplierCardNumber || '-'}</td>
                 <td>{card.date}</td>
@@ -372,5 +401,3 @@ const CardList: React.FC<CardListProps> = ({
 };
 
 export default CardList;
-//fgf
-//sss
