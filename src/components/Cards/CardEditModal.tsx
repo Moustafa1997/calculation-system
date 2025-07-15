@@ -18,7 +18,8 @@ const CardEditModal: React.FC<CardEditModalProps> = ({ card, onSave, onClose }) 
     discountAmount: card.discountAmount.toString(),
     netWeight: card.netWeight.toString(),
     vehicleNumber: card.vehicleNumber,
-    supplierName: card.supplierName
+    supplierName: card.supplierName,
+    is_done: card.is_done || false
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -40,8 +41,13 @@ const CardEditModal: React.FC<CardEditModalProps> = ({ card, onSave, onClose }) 
   }, [formData.grossWeight, formData.discountPercentage]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    
+    if (type === 'checkbox') {
+      setFormData(prev => ({ ...prev, [name]: checked }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const validateForm = (): boolean => {
@@ -81,7 +87,8 @@ const CardEditModal: React.FC<CardEditModalProps> = ({ card, onSave, onClose }) 
       discountAmount: parseFloat(formData.discountAmount),
       netWeight: parseFloat(formData.netWeight),
       vehicleNumber: formData.vehicleNumber,
-      supplierName: formData.supplierName
+      supplierName: formData.supplierName,
+      is_done: formData.is_done
     };
 
     updateCard(updatedCard);
@@ -202,6 +209,20 @@ const CardEditModal: React.FC<CardEditModalProps> = ({ card, onSave, onClose }) 
                 className="input-field"
                 placeholder="أدخل اسم المورد"
               />
+            </div>
+            
+            <div className="form-group flex items-center">
+              <input
+                type="checkbox"
+                id="is_done"
+                name="is_done"
+                checked={formData.is_done}
+                onChange={handleChange}
+                className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+              />
+              <label htmlFor="is_done" className="form-label mr-2 mb-0">
+                كارتة مكتملة
+              </label>
             </div>
           </div>
           
