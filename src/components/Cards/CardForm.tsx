@@ -20,7 +20,8 @@ const CardForm: React.FC = () => {
     discountAmount: '',
     netWeight: '',
     vehicleNumber: '',
-    supplierName: ''
+    supplierName: '',
+    is_done: false
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -71,7 +72,12 @@ const CardForm: React.FC = () => {
   }, [formData.grossWeight, formData.discountPercentage, formData.discountAmount, formData.netWeight]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+    
+    if (type === 'checkbox') {
+      setFormData(prev => ({ ...prev, [name]: checked }));
+      return;
+    }
     
     if (name === 'discountPercentage') {
       setFormData(prev => ({
@@ -141,7 +147,8 @@ const CardForm: React.FC = () => {
         discountAmount,
         netWeight,
         vehicleNumber: formData.vehicleNumber,
-        supplierName: formData.supplierName || ''
+        supplierName: formData.supplierName || '',
+        is_done: formData.is_done
       };
 
       const newCard = await saveCard(cardData);
@@ -158,7 +165,8 @@ const CardForm: React.FC = () => {
           discountAmount: '',
           netWeight: '',
           vehicleNumber: '',
-          supplierName: ''
+          supplierName: '',
+          is_done: false
         });
         
         setIsSuccess(true);
@@ -290,6 +298,20 @@ const CardForm: React.FC = () => {
               className="input-field"
               placeholder="أدخل اسم المورد"
             />
+          </div>
+          
+          <div className="form-group flex items-center">
+            <input
+              type="checkbox"
+              id="is_done"
+              name="is_done"
+              checked={formData.is_done}
+              onChange={handleChange}
+              className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+            />
+            <label htmlFor="is_done" className="form-label mr-2 mb-0">
+              كارتة مكتملة
+            </label>
           </div>
         </div>
         
