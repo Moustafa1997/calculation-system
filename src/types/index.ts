@@ -9,6 +9,7 @@ export interface Card {
   vehicleNumber: string;
   supplierName: string;
   supplierCardNumber?: number;
+  is_done?: boolean;
 }
 
 export interface Invoice {
